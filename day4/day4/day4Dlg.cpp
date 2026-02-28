@@ -9,6 +9,7 @@
 #include "afxdialogex.h"
 #include <iostream>
 
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -68,8 +69,8 @@ BEGIN_MESSAGE_MAP(Cday4Dlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
-	ON_BN_CLICKED(IDC_BTN_DLG, &Cday4Dlg::OnBnClickedBtnDlg)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_BTN_TEST, &Cday4Dlg::OnBnClickedBtnTest)
 END_MESSAGE_MAP()
 
 
@@ -106,10 +107,17 @@ BOOL Cday4Dlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
+	MoveWindow(0, 0, 1280, 800);
 	m_pDlgImage = new CDlgImage;
 	m_pDlgImage->Create(IDD_CDlgImage, this);
 	m_pDlgImage->ShowWindow(SW_SHOW);
-	
+	m_pDlgImage->MoveWindow(0, 0, 640, 480);
+
+
+	m_pDlgImgResult = new CDlgImage;
+	m_pDlgImgResult->Create(IDD_CDlgImage, this);
+	m_pDlgImgResult->ShowWindow(SW_SHOW);
+	m_pDlgImgResult->MoveWindow(640, 0, 640, 480);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -164,22 +172,55 @@ HCURSOR Cday4Dlg::OnQueryDragIcon()
 }
 
 
-void Cday4Dlg::OnBnClickedBtnDlg()
-{
-	m_pDlgImage->ShowWindow(SW_SHOW);
-}
 
 void Cday4Dlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
-	delete m_pDlgImage;
+	if(m_pDlgImage)		delete m_pDlgImage;
+	if(m_pDlgImgResult)	delete m_pDlgImgResult;
 }
 
-using namespace std;
+
 
 void Cday4Dlg::callFunc(int n) {
-	int nData = n;
+	// int nData = n;
 	cout << n << endl;
+}
+
+void Cday4Dlg::OnBnClickedBtnTest()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_Image.GetBits();
+	int nWidth = m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	int nPitch = m_pDlgImage->m_Image.GetPitch();
+	memset(fm, 0xff, nWidth * nHeight);
+
+	for (int k = 0; k < 100; k++) {
+		int x = rand() % nWidth;
+		int y = rand() % nHeight;
+
+		fm[y * nPitch + x] =0 ; 
+	}
+
+	int nIndex = 0;
+	for (int i = 0; i < nHeight; i++) {
+		for (int j = 0; j < nWidth; j++) {
+			if (fm[i * nPitch + j] == 0) {
+				if (m_pDlgImgResult->m_nDataCount < 100) {
+					m_pDlgImgResult->m_ptData[nIndex].x = i;
+					m_pDlgImgResult->m_ptData[nIndex].y = j;
+					m_pDlgImgResult->m_nDataCount = ++nIndex;
+				}
+				
+			}
+		}
+	}
+	// memset(fm, 0, 640 * 480);
+
+	// cout << "nSum : " << nSum << endl;
+	m_pDlgImage->Invalidate();
+	m_pDlgImgResult->Invalidate();
 }
